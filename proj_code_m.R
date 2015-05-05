@@ -1,14 +1,16 @@
+library(quantmod)
+
 library(fBasics)
-
 # Read in the data
+getwd()
 
-emc <- read.csv("~/Desktop/Spring 2015/Time Series/PROJECT/emc.csv")
+emc <- read.csv("C:/Users/Mansi/Desktop/statistics class SEM1/math 265/project/emc.csv")
 emc=emc[-1006,]
 tail(emc)
-hpq <- read.csv("~/Desktop/Spring 2015/Time Series/PROJECT/hpq.csv")
+hpq <- read.csv("C:/Users/Mansi/Desktop/statistics class SEM1/math 265/project/hpq.csv")
 tail(hpq)
 hpq=hpq[-1006,]
-qqq <- read.csv("~/Desktop/Spring 2015/Time Series/PROJECT/qqq.csv")
+qqq <- read.csv("C:/Users/Mansi/Desktop/statistics class SEM1/math 265/project/qqq.csv")
 qqq=qqq[-1006,]
 tail(qqq)
 
@@ -75,8 +77,10 @@ print(paste("QQQ p-value:",pv.qqq))
 
 d1=density(emc_ln_rtn)
 plot(d1$x,d1$y,xlab='returns',ylab='density',main='Log EMC Daily Returns',type='l')
+
 d2=density(hpq_ln_rtn)
 plot(d2$x,d2$y,xlab='returns',ylab='density',main='Log HPQ Daily Returns',type='l')
+
 d3=density(qqq_ln_rtn)
 plot(d3$x,d3$y,xlab='returns',ylab='density',main='Log QQQ Daily Returns',type='l')
 
@@ -111,12 +115,30 @@ adfTest(hpq_ln_rtn, lag=1, type='ct')
 # conclusion - no unit root - series has stationarity
 
 # i was just trying to get things labeled by date here..almost worked..
+
+#tried this AR(11) model, seems ok
+ts.emc <-ts(emc_ln_rtn,frequency=365,start=c(2011,1))
+plot(ts.emc, main="Log returns EMC", xlab="Time", ylab="Log Returns")
+m1 <-arima(emc_ln_rtn,order=c(11,1,0),include.mean=FALSE)
+tsdiag(m1)
+m1
+
 ts.hpq <- ts(hpq_ln_rtn,frequency=365,start=c(2011,1))
 plot(ts.hpq, main="Log Returns HPQ", xlab= "Time", ylab="Log Returns")
-#tried this MA(5) model, seems ok
-m1 <- arima(hpq_ln_rtn, order= c(0,0,5), include.mean=FALSE)
-tsdiag(m1)
+m2 <- arima(hpq_ln_rtn, order= c(11,1,0), include.mean=FALSE)
+tsdiag(m2)
+m2
 
+ts.qqq <-ts(qqq_ln_rtn,frequency=365,start=c(2011,1))
+plot(ts.qqq, main="Log Returns QQQ", xlab="Time", ylab="Log Returns")
+m3 <-arima(qqq_ln_rtn, order= c(12,1,0), include.mean=FALSE)
+tsdiag(m3)
+m3
+
+plot acf cuts at lag 11. So do we say that the Arima is at lag 11?
+#also the aic value is negative and hence relatively small. 
+
+#doesnt let me run the following codes
 # HPQ :  ACF and PACF, Box-Ljung
 hpq.acf <- acf(hpq_ln_rtn)
 hpq.pacf <- pacf(hpq_ln_rtn)
@@ -126,10 +148,5 @@ Box.test(hpq_ln_rtn)
 # Perform Box-Ljung test for serial correlations.
 Box.test(hpq_ln_rtn,type='Ljung') 
 # fail to reject Null Hyp... 
-
-
-
-
-
 
 
