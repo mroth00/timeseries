@@ -105,13 +105,22 @@ normalTest(p_qqq_ln_rtn, method='jb')
 # Part (f)
 # attempt at model estimations, first trying HPQ only
 
-
 # 3 versons of the augmented dickey fuller test
 # check for non-stationarity (existing unit roots)
 library(fUnitRoots)
+
+adfTest(emc_ln_rtn, lag=1, type='c')
+adfTest(emc_ln_rtn, lag=1, type='nc')
+adfTest(emc_ln_rtn, lag=1, type='ct')
+
 adfTest(hpq_ln_rtn, lag=1, type='c')
 adfTest(hpq_ln_rtn, lag=1, type='nc')
 adfTest(hpq_ln_rtn, lag=1, type='ct')
+
+adfTest(qqq_ln_rtn, lag=1, type='c')
+adfTest(qqq_ln_rtn, lag=1, type='nc')
+adfTest(qqq_ln_rtn, lag=1, type='ct')
+
 # conclusion - no unit root - series has stationarity
 
 # i was just trying to get things labeled by date here..almost worked..
