@@ -150,3 +150,8 @@ Box.test(hpq_ln_rtn,type='Ljung')
 # fail to reject Null Hyp... 
 
 
+
+m1p=predict(m1,30)
+
+lcl=m1p$pred-1.96*m1p$se
+ucl=m1p$pred+1.96*m1p$se
