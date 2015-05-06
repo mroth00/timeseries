@@ -2,7 +2,6 @@ library(quantmod)
 
 library(fBasics)
 # Read in the data
-getwd()
 
 emc <- read.csv("C:/Users/Mansi/Desktop/statistics class SEM1/math 265/project/emc.csv")
 emc=emc[-1006,]
@@ -93,20 +92,22 @@ plot(d3$x,d3$y,xlab='returns',ylab='density',main='Log QQQ Daily Returns',type='
 # i'm taking this Jarque-Bera test from the blue Tsay book p. 10 and p.13
 #then there are box-ljung tests and dickey fuller tests below too..
 #turn to percentages
+ 
 p_emc_ln_rtn<- emc_ln_rtn*100
 p_hpq_ln_rtn <- hpq_ln_rtn*100
 p_qqq_ln_rtn <- qqq_ln_rtn*100
+
 #  the Jarque-bera normality test
 normalTest(p_emc_ln_rtn, method='jb')
 normalTest(p_hpq_ln_rtn, method='jb')
 normalTest(p_qqq_ln_rtn, method='jb')
-
 
 # Part (f)
 # attempt at model estimations, first trying HPQ only
 
 # 3 versons of the augmented dickey fuller test
 # check for non-stationarity (existing unit roots)
+
 library(fUnitRoots)
 
 adfTest(emc_ln_rtn, lag=1, type='c')
@@ -142,25 +143,56 @@ ts.qqq <-ts(qqq_ln_rtn,frequency=365,start=c(2011,1))
 plot(ts.qqq, main="Log Returns QQQ", xlab="Time", ylab="Log Returns")
 m3 <-arima(qqq_ln_rtn, order= c(12,1,0), include.mean=FALSE)
 tsdiag(m3)
-m3
+pacf(m3)
 
-plot acf cuts at lag 11. So do we say that the Arima is at lag 11?
-#also the aic value is negative and hence relatively small. 
+#the acf cuts off at lag 11 for emc and hpq 
 
-#doesnt let me run the following codes
+#EMC : ACF and PACF, Box- Ljung
+emc.acf <- acf(emc_ln_rtn)
+emc.pacf <-pacf(emc_ln_rtn)
+emc.diff.pacf<- pacf(diff(emc_ln_rtn))
+
 # HPQ :  ACF and PACF, Box-Ljung
 hpq.acf <- acf(hpq_ln_rtn)
 hpq.pacf <- pacf(hpq_ln_rtn)
-hpf.diff.pacf <- pacf(diff(hpq_ln_rtn))
+hpq.diff.pacf <- pacf(diff(hpq_ln_rtn))
+
+#QQQ : ACF and PACF, Box- Ljung
+qqq.acf <- acf(qqq_ln_rtn)
+qqq.pacf<- pacf(qqq_ln_rtn)
+qqq.diff.pacf <- pacf(diff(qqq_ln_rtn))
+
 # Perform Box-Pierce test for serial correlations
+Box.test(emc_ln_rtn)
 Box.test(hpq_ln_rtn) 
+Box.test(qqq_ln_rtn)
+
 # Perform Box-Ljung test for serial correlations.
+Box.test(emc_ln_rtn,type='Ljung')
 Box.test(hpq_ln_rtn,type='Ljung') 
+Box.test(qqq_ln_rtn,type='Ljung')
+
 # fail to reject Null Hyp... 
 
-
+#g) forecasts
 
 m1p=predict(m1,30)
 
 lcl=m1p$pred-1.96*m1p$se
+lcl
 ucl=m1p$pred+1.96*m1p$se
+ucl
+
+m2p=predict(m2,30)
+lcl=m2p$pred-1.96*m2p$se
+lcl
+ucl=m2p$pred+1.96*m2p$se
+ucl
+
+m3p=predict(m3,30)
+lcl=m3p$pred-1.96*m3p$se
+lcl
+ucl=m3p$pred+1.96*m3p$se
+ucl
+
+#h)Determine ARCH effect in the log return series
