@@ -196,3 +196,16 @@ ucl=m3p$pred+1.96*m3p$se
 ucl
 
 #h)Determine ARCH effect in the log return series
+
+
+Box.test(m1$residuals,lag=10,type='Ljung')
+Box.test(m2$residuals,lag=10,type='Ljung')
+Box.test(m3$residuals,lag=10,type='Ljung')
+
+
+Box.test(m1$residuals^2,lag=10,type='Ljung')
+Box.test(m2$residuals^2,lag=10,type='Ljung')
+Box.test(m3$residuals^2,lag=10,type='Ljung')
+
+
+
