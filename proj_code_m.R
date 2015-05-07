@@ -1,5 +1,5 @@
 library(quantmod)
-
+library(fGarch)
 library(fBasics)
 # Read in the data
 
@@ -207,5 +207,17 @@ Box.test(m1$residuals^2,lag=10,type='Ljung')
 Box.test(m2$residuals^2,lag=10,type='Ljung')
 Box.test(m3$residuals^2,lag=10,type='Ljung')
 
+#i) 
 
+mm1=garchFit(~arma(11,0)+garch(1,1),data=diff(emc_ln_rtn),trace=F)
+summary(mm1)
+
+# No arch Effect dont bother
+
+mm2=garchFit(~arma(11,0)+garch(1,1),data=diff(hpq_ln_rtn),trace=F)
+summary(mm2)
+
+
+mm3=garchFit(~arma(11,0)+garch(1,1),data=diff(qqq_ln_rtn),trace=F)
+summary(mm3)
 
