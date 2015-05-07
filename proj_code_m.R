@@ -208,7 +208,7 @@ Box.test(m2$residuals^2,lag=10,type='Ljung')
 Box.test(m3$residuals^2,lag=10,type='Ljung')
 
 #i) 
-
+library(fGarch)
 mm1=garchFit(~arma(11,0)+garch(1,1),data=diff(emc_ln_rtn),trace=F)
 summary(mm1)
 
@@ -220,4 +220,23 @@ summary(mm2)
 
 mm3=garchFit(~arma(11,0)+garch(1,1),data=diff(qqq_ln_rtn),trace=F)
 summary(mm3)
+
+plot(mm1)
+plot(mm2)
+plot(mm3)
+
+#j
+mmm1=garchFit(~arma(11,0)+garch(1,1),data=diff(emc_ln_rtn),trace=F,cond.dist="std")
+summary(mmm1)
+plot(mmm1)
+
+mmm2=garchFit(~arma(11,0)+garch(1,1),data=diff(hpq_ln_rtn),trace=F,cond.dist="std")
+summary(mmm2)
+plot(mmm2)
+
+mmm3=garchFit(~arma(11,0)+garch(1,1),data=diff(qqq_ln_rtn),trace=F,cond.dist="std")
+summary(mmm3)
+plot(mmm3)
+
+
 
