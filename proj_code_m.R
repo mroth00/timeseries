@@ -129,23 +129,20 @@ adfTest(qqq_ln_rtn, lag=1, type='ct')
 #tried this AR(11) model, seems ok
 ts.emc <-ts(emc_ln_rtn,frequency=365,start=c(2011,1))
 plot(ts.emc, main="Log returns EMC", xlab="Time", ylab="Log Returns")
-m1 <-arima(emc_ln_rtn,order=c(11,1,0),include.mean=FALSE)
+m1 <-arima(emc_ln_rtn,order=c(1,0,1),include.mean=FALSE)
 tsdiag(m1)
 m1
 
 ts.hpq <- ts(hpq_ln_rtn,frequency=365,start=c(2011,1))
 plot(ts.hpq, main="Log Returns HPQ", xlab= "Time", ylab="Log Returns")
-m2 <- arima(hpq_ln_rtn, order= c(11,1,0), include.mean=FALSE)
+m2 <- arima(hpq_ln_rtn, order= c(1,0,1), include.mean=FALSE)
 tsdiag(m2)
 m2
 
 ts.qqq <-ts(qqq_ln_rtn,frequency=365,start=c(2011,1))
 plot(ts.qqq, main="Log Returns QQQ", xlab="Time", ylab="Log Returns")
-m3 <-arima(qqq_ln_rtn, order= c(12,1,0), include.mean=FALSE)
+m3 <-arima(qqq_ln_rtn, order= c(2,0,1), include.mean=FALSE)
 tsdiag(m3)
-pacf(m3)
-
-#the acf cuts off at lag 11 for emc and hpq 
 
 #EMC : ACF and PACF, Box- Ljung
 emc.acf <- acf(emc_ln_rtn)
@@ -207,18 +204,19 @@ Box.test(m1$residuals^2,lag=10,type='Ljung')
 Box.test(m2$residuals^2,lag=10,type='Ljung')
 Box.test(m3$residuals^2,lag=10,type='Ljung')
 
-#i) 
+#i) The parameters for garch needs to be decided, the coefficients are not significant
+#with garch(1,1), garch(1,0) as well as garch(0,1)
 library(fGarch)
-mm1=garchFit(~arma(11,0)+garch(1,1),data=diff(emc_ln_rtn),trace=F)
+mm1=garchFit(~arma(1,1)+garch(0,1),data=(emc_ln_rtn),trace=F)
 summary(mm1)
 
 # No arch Effect dont bother
 
-mm2=garchFit(~arma(11,0)+garch(1,1),data=diff(hpq_ln_rtn),trace=F)
+mm2=garchFit(~arma(1,1)+garch(1,1),data=(hpq_ln_rtn),trace=F)
 summary(mm2)
 
 
-mm3=garchFit(~arma(11,0)+garch(1,1),data=diff(qqq_ln_rtn),trace=F)
+mm3=garchFit(~arma(2,1)+garch(1,0),data=(qqq_ln_rtn),trace=F)
 summary(mm3)
 
 plot(mm1)
@@ -226,15 +224,15 @@ plot(mm2)
 plot(mm3)
 
 #j
-mmm1=garchFit(~arma(11,0)+garch(1,1),data=diff(emc_ln_rtn),trace=F,cond.dist="std")
+mmm1=garchFit(~arma(1,1)+garch(1,1),data=(emc_ln_rtn),trace=F,cond.dist="std")
 summary(mmm1)
 plot(mmm1)
 
-mmm2=garchFit(~arma(11,0)+garch(1,1),data=diff(hpq_ln_rtn),trace=F,cond.dist="std")
+mmm2=garchFit(~arma(1,1)+garch(1,1),data=(hpq_ln_rtn),trace=F,cond.dist="std")
 summary(mmm2)
 plot(mmm2)
 
-mmm3=garchFit(~arma(11,0)+garch(1,1),data=diff(qqq_ln_rtn),trace=F,cond.dist="std")
+mmm3=garchFit(~arma(2,1)+garch(1,1),data=(qqq_ln_rtn),trace=F,cond.dist="std")
 summary(mmm3)
 plot(mmm3)
 
