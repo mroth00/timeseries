@@ -129,7 +129,7 @@ adfTest(qqq_ln_rtn, lag=1, type='ct')
 #tried this AR(11) model, seems ok
 ts.emc <-ts(emc_ln_rtn,frequency=365,start=c(2011,1))
 plot(ts.emc, main="Log returns EMC", xlab="Time", ylab="Log Returns")
-m1 <-arima(emc_ln_rtn,order=c(1,0,1),include.mean=FALSE)
+m1 <-arima(emc_ln_rtn,order=c(11,1,0),include.mean=FALSE)
 tsdiag(m1)
 m1
 
@@ -292,9 +292,33 @@ abline(h=0,v=0)
 #part c (made changes in the code from th example but unable to run these codes)
 # compute rolling correlations
 #
-chart.RollingCorrelation(emc_ln_rtn, hpq_ln_rtn,width=30)
-chart.RollingCorrelation(hpq_ln_rtn, qqq_ln_rtn,width=30)
-chart.RollingCorrelation(emc_ln_rtn, qqq_ln_rtn,width=30)
+
+symbol.vec = c("EMC", "HPQ","QQQ")
+getSymbols(symbol.vec, from ="2011-01-04", to = "2014-12-24",src="yahoo")
+colnames(EMC)
+start(MSFT)
+end(MSFT)
+
+# extract adjusted closing prices
+EMC = EMC[, "EMC.Adjusted", drop=F]
+HPQ = HPQ[, "HPQ.Adjusted", drop=F]
+QQQ = QQQ[, "QQQ.Adjusted", drop=F]
+
+EMC.ret = CalculateReturns(EMC, method="log")
+HPQ.ret = CalculateReturns(HPQ, method="log")
+QQQ.ret = CalculateReturns(QQQ, method="log")
+
+EMC.ret = EMC.ret[-1,]
+HPQ.ret = HPQ.ret[-1,]
+QQQ.ret = QQQ.ret[-1,]
+colnames(EMC.ret) ="MSFT"
+colnames(HPQ.ret) = "HPQ"
+colnames(QQQ.ret) = "QQQ"
+
+
+chart.RollingCorrelation(EMC.ret, HPQ.ret,width=30)
+chart.RollingCorrelation(HPQ.ret, QQQ.ret,width=30)
+chart.RollingCorrelation(EMC.ret, QQQ.ret,width=30)
 
 cor.fun = function(x){
   cor(x)[1,2]
