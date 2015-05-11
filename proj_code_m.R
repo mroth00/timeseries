@@ -267,6 +267,7 @@ abline(h=0,v=0)
 #m) Using a 30 day moving average and plotting covariances and correlations 
 
 library(PerformanceAnalytics)
+library(quantmod)
 library(rugarch)
 library(car)
 library(FinTS)
@@ -320,6 +321,10 @@ chart.RollingCorrelation(EMC.ret, HPQ.ret,width=30)
 chart.RollingCorrelation(HPQ.ret, QQQ.ret,width=30)
 chart.RollingCorrelation(EMC.ret, QQQ.ret,width=30)
 
+# create combined data series
+EMC.HPQ.ret = merge(EMC.ret,HPQ.ret)
+
+
 cor.fun = function(x){
   cor(x)[1,2]
 }
@@ -328,22 +333,18 @@ cov.fun = function(x){
   cov(x)[1,2]
 }
 
-roll.cov = rollapply(as.zoo(emc_ln_rtn), FUN=cov.fun, width=30,
+roll.cov = rollapply(as.zoo(EMC.HPQ.ret), FUN=cov.fun, width=30,
                      by.column=FALSE, align="right")
-roll.cor = rollapply(as.zoo(hpq_ln_rtn), FUN=cor.fun, width=20,
+roll.cor = rollapply(as.zoo(EMC.HPQ.ret), FUN=cor.fun, width=20,
                      by.column=FALSE, align="right")
+
 par(mfrow=c(2,1))
-plot(roll.cov, main="30-day rolling covariances",
+plot(roll.cov, main="20-day rolling covariances",
      ylab="covariance", lwd=2, col="blue")
 grid()
-abline(h=cov(emc_ln_rtn)[1,2], lwd=2, col="red")
-plot(roll.cor, main="30-day rolling correlations",
+abline(h=cov(EMC.HPQ.ret)[1,2], lwd=2, col="red")
+plot(roll.cor, main="20-day rolling correlations",
      ylab="correlation", lwd=2, col="blue")
 grid()
-abline(h=cor(hpq_ln_rtn)[1,2], lwd=2, col="red")
-plot(roll.cor, main="30-day rolling correlations",
-     ylab="correlation", lwd=2, col="blue")
-grid()
-abline(h=cor(qqq_ln_rtn)[1,2], lwd=2, col="red")
-par(mfrow=c(1,1))
+abline(h=cor(EMC.HPQ.ret)[1,2], lwd=2, col="red")
 
