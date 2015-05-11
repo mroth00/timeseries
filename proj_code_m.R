@@ -204,13 +204,13 @@ Box.test(m1$residuals^2,lag=10,type='Ljung')
 Box.test(m2$residuals^2,lag=10,type='Ljung')
 Box.test(m3$residuals^2,lag=10,type='Ljung')
 
-#i) The parameters for garch needs to be decided, the coefficients are not significant
-#with garch(1,1), garch(1,0) as well as garch(0,1)
+#i) The parameters for garch needs to be decided, the model coefficients
+#are not significant with garch(1,1), garch(1,0), garch(0,1) and for arch as well.
 library(fGarch)
-mm1=garchFit(~arma(1,1)+garch(0,1),data=(emc_ln_rtn),trace=F)
+mm1=garchFit(~arma(1,1)+garch(1,1),data=(emc_ln_rtn),trace=F)
 summary(mm1)
 
-# No arch Effect dont bother
+# No arch Effect for hpq dont bother
 
 mm2=garchFit(~arma(1,1)+garch(1,1),data=(hpq_ln_rtn),trace=F)
 summary(mm2)
@@ -236,5 +236,90 @@ mmm3=garchFit(~arma(2,1)+garch(1,1),data=(qqq_ln_rtn),trace=F,cond.dist="std")
 summary(mmm3)
 plot(mmm3)
 
+#k) 1 step ahead forecast with 95% interval forecasts
+pm1=predict(mmm1,1)
+pm1
+pm2=predict(mmm2,1)
+pm2
+pm3=predict(mmm3,1)
+pm3
 
+#l) Determine cross correlations
+
+par(mfcol=c(3,1))
+plot(mm1,which=7)
+mtext("EMC",side=3,cex=0.6)
+plot(mm2,which=7)
+mtext("HP",side=3,cex=0.6)
+plot(mm3,which=7)
+mtext("NASDAQ 100",side=3,cex=0.6)
+
+par(mfcol=c(1,3))
+plot(coredata(emc_ln_rtn),coredata(hpq_ln_rtn),xlab="EMC",ylab="HP",type="p",pch="16",lwd=2,col="blue",main="Scatterplot of EMC and HP")
+abline(h=0,v=0)
+
+plot(coredata(hpq_ln_rtn),coredata(qqq_ln_rtn),xlab="HP",ylab="NASDAQ 100",type="p",pch="16",lwd=2,col="blue",main="Scatterplot of HP and NASDAQ 100")
+abline(h=0,v=0)
+
+plot(coredata(emc_ln_rtn),coredata(qqq_ln_rtn),xlab="EMC",ylab="NASDAQ 100",type="p",pch="16",lwd=2,col="blue",main="Scatterplot of EMC and NASDAQ 100")
+abline(h=0,v=0)
+
+#m) Using a 30 day moving average and plotting covariances and correlations 
+
+library(PerformanceAnalytics)
+library(rugarch)
+library(car)
+library(FinTS)
+library(rmgarch)
+options(digits=4)
+
+# plot returns
+plot(emc_ln_rtn)
+plot(hpq_ln_rtn)
+plot(qqq_ln_rtn)
+
+# scatterplot of returns
+plot( coredata(emc_ln_rtn), coredata(hpq_ln_rtn), xlab="EMC", ylab="HPQ", 
+      type="p", pch=16, lwd=2, col="blue")
+abline(h=0,v=0)
+plot(coredata(hpq_ln_rtn), coredata(qqq_ln_rtn), xlab="HP", ylab="NASDAQ 100",
+     type="p", pch=16, lwd=2, col="blue")
+abline(h=0,v=0)
+plot(coredata(emc_ln_rtn), coredata(qqq_ln_rtn), xlab="EMC", ylab="NASDAQ 100",
+     type="p", pch=16, lwd=2, col="blue")
+abline(h=0,v=0)
+
+#part c (made changes in the code from th example but unable to run these codes)
+# compute rolling correlations
+#
+chart.RollingCorrelation(emc_ln_rtn, hpq_ln_rtn,width=30)
+chart.RollingCorrelation(hpq_ln_rtn, qqq_ln_rtn,width=30)
+chart.RollingCorrelation(emc_ln_rtn, qqq_ln_rtn,width=30)
+
+cor.fun = function(x){
+  cor(x)[1,2]
+}
+
+cov.fun = function(x){
+  cov(x)[1,2]
+}
+
+roll.cov = rollapply(as.zoo(emc_ln_rtn), FUN=cov.fun, width=30,
+                     by.column=FALSE, align="right")
+roll.cor = rollapply(as.zoo(hpq_ln_rtn), FUN=cor.fun, width=20,
+                     by.column=FALSE, align="right")
+par(mfrow=c(2,1))
+plot(roll.cov, main="30-day rolling covariances",
+     ylab="covariance", lwd=2, col="blue")
+grid()
+abline(h=cov(emc_ln_rtn)[1,2], lwd=2, col="red")
+plot(roll.cor, main="30-day rolling correlations",
+     ylab="correlation", lwd=2, col="blue")
+grid()
+abline(h=cor(hpq_ln_rtn)[1,2], lwd=2, col="red")
+plot(roll.cor, main="30-day rolling correlations",
+     ylab="correlation", lwd=2, col="blue")
+grid()
+abline(h=cor(qqq_ln_rtn)[1,2], lwd=2, col="red")
+par(mfrow=c(1,1))
 
