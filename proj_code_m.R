@@ -296,9 +296,7 @@ abline(h=0,v=0)
 
 symbol.vec = c("EMC", "HPQ","QQQ")
 getSymbols(symbol.vec, from ="2011-01-04", to = "2014-12-24",src="yahoo")
-colnames(EMC)
-start(MSFT)
-end(MSFT)
+
 
 # extract adjusted closing prices
 EMC = EMC[, "EMC.Adjusted", drop=F]
@@ -312,7 +310,7 @@ QQQ.ret = CalculateReturns(QQQ, method="log")
 EMC.ret = EMC.ret[-1,]
 HPQ.ret = HPQ.ret[-1,]
 QQQ.ret = QQQ.ret[-1,]
-colnames(EMC.ret) ="MSFT"
+colnames(EMC.ret) ="EMC"
 colnames(HPQ.ret) = "HPQ"
 colnames(QQQ.ret) = "QQQ"
 
