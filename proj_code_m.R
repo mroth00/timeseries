@@ -133,8 +133,7 @@ m1 <-arima(emc_ln_rtn,order=c(2,1,2),include.mean=FALSE)
 tsdiag(m1)
 m1
 
-mm1=garchFit(~arma(2,2)+garch(2,2),data=(emc_ln_rtn),trace=F)
-summary(mm1)
+
 
 
 ts.hpq <- ts(hpq_ln_rtn,frequency=365,start=c(2011,1))
@@ -211,7 +210,8 @@ Box.test(m3$residuals^2,lag=10,type='Ljung')
 #i) The parameters for garch needs to be decided, the model coefficients
 #are not significant with garch(1,1), garch(1,0), garch(0,1) and for arch as well.
 library(fGarch)
-mm1=garchFit(~arma(1,1)+garch(1,1),data=(emc_ln_rtn),trace=F)
+
+mm1=garchFit(~arma(2,2)+garch(2,2),data=(emc_ln_rtn),trace=F)
 summary(mm1)
 
 # No arch Effect for hpq dont bother
