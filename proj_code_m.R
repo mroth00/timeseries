@@ -129,9 +129,13 @@ adfTest(qqq_ln_rtn, lag=1, type='ct')
 #tried this AR(11) model, seems ok
 ts.emc <-ts(emc_ln_rtn,frequency=365,start=c(2011,1))
 plot(ts.emc, main="Log returns EMC", xlab="Time", ylab="Log Returns")
-m1 <-arima(emc_ln_rtn,order=c(11,1,0),include.mean=FALSE)
+m1 <-arima(emc_ln_rtn,order=c(2,1,2),include.mean=FALSE)
 tsdiag(m1)
 m1
+
+mm1=garchFit(~arma(2,2)+garch(2,2),data=(emc_ln_rtn),trace=F)
+summary(mm1)
+
 
 ts.hpq <- ts(hpq_ln_rtn,frequency=365,start=c(2011,1))
 plot(ts.hpq, main="Log Returns HPQ", xlab= "Time", ylab="Log Returns")
