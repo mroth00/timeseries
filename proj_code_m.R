@@ -18,6 +18,11 @@ emc_ln_rtn=log(emc$Daily_Return+1)
 hpq_ln_rtn=log(hpq$Daily_Return+1)
 qqq_ln_rtn=log(qqq$Daily_Return+1)
 
+# plot returns
+plot(emc_ln_rtn,type='l')
+plot(hpq_ln_rtn,type='l')
+plot(qqq_ln_rtn,type='l')
+
 # Part (a)
 
 basicStats(emc_ln_rtn)
@@ -133,19 +138,17 @@ m1 <-arima(emc_ln_rtn,order=c(2,1,2),include.mean=FALSE)
 tsdiag(m1)
 m1
 
-
-
-
 ts.hpq <- ts(hpq_ln_rtn,frequency=365,start=c(2011,1))
 plot(ts.hpq, main="Log Returns HPQ", xlab= "Time", ylab="Log Returns")
-m2 <- arima(hpq_ln_rtn, order= c(1,0,1), include.mean=FALSE)
+m2 <- arima(hpq_ln_rtn, order= c(2,1,2), include.mean=FALSE)
 tsdiag(m2)
 m2
 
 ts.qqq <-ts(qqq_ln_rtn,frequency=365,start=c(2011,1))
 plot(ts.qqq, main="Log Returns QQQ", xlab="Time", ylab="Log Returns")
-m3 <-arima(qqq_ln_rtn, order= c(2,0,1), include.mean=FALSE)
+m3 <-arima(qqq_ln_rtn, order= c(2,1,2), include.mean=FALSE)
 tsdiag(m3)
+
 
 #EMC : ACF and PACF, Box- Ljung
 emc.acf <- acf(emc_ln_rtn)
@@ -215,36 +218,40 @@ mm1=garchFit(~arma(2,2)+garch(2,2),data=(emc_ln_rtn),trace=F)
 summary(mm1)
 
 # No arch Effect for hpq dont bother
-
 mm2=garchFit(~arma(1,1)+garch(1,1),data=(hpq_ln_rtn),trace=F)
 summary(mm2)
 
-
-mm3=garchFit(~arma(2,1)+garch(1,0),data=(qqq_ln_rtn),trace=F)
+mm3=garchFit(~arma(2,2)+garch(2,2),data=(qqq_ln_rtn),trace=F)
 summary(mm3)
 
 plot(mm1)
+
 plot(mm2)
+
 plot(mm3)
 
 #j
-mmm1=garchFit(~arma(1,1)+garch(1,1),data=(emc_ln_rtn),trace=F,cond.dist="std")
+mmm1=garchFit(~arma(2,2)+garch(2,2),data=(emc_ln_rtn),trace=F,cond.dist="std")
 summary(mmm1)
 plot(mmm1)
 
-mmm2=garchFit(~arma(1,1)+garch(1,1),data=(hpq_ln_rtn),trace=F,cond.dist="std")
-summary(mmm2)
-plot(mmm2)
+#the model doesnt show significant coefficients for the same parameters, what should be done?
 
-mmm3=garchFit(~arma(2,1)+garch(1,1),data=(qqq_ln_rtn),trace=F,cond.dist="std")
+mmm2=garchFit(~arma(2,2)+garch(2,2),data=(hpq_ln_rtn),trace=F,cond.dist="std")
+summary(mmm3)
+plot(mmm3)
+
+mmm3=garchFit(~arma(2,2)+garch(2,2),data=(qqq_ln_rtn),trace=F,cond.dist="std")
 summary(mmm3)
 plot(mmm3)
 
 #k) 1 step ahead forecast with 95% interval forecasts
 pm1=predict(mmm1,1)
 pm1
+
 pm2=predict(mmm2,1)
 pm2
+
 pm3=predict(mmm3,1)
 pm3
 
@@ -278,11 +285,6 @@ library(FinTS)
 library(rmgarch)
 options(digits=4)
 
-# plot returns
-plot(emc_ln_rtn)
-plot(hpq_ln_rtn)
-plot(qqq_ln_rtn)
-
 # scatterplot of returns
 plot( coredata(emc_ln_rtn), coredata(hpq_ln_rtn), xlab="EMC", ylab="HPQ", 
       type="p", pch=16, lwd=2, col="blue")
@@ -294,10 +296,9 @@ plot(coredata(emc_ln_rtn), coredata(qqq_ln_rtn), xlab="EMC", ylab="NASDAQ 100",
      type="p", pch=16, lwd=2, col="blue")
 abline(h=0,v=0)
 
-#part c (made changes in the code from th example but unable to run these codes)
+#part c 
 # compute rolling correlations
 #
-
 symbol.vec = c("EMC", "HPQ","QQQ")
 getSymbols(symbol.vec, from ="2011-01-04", to = "2014-12-24",src="yahoo")
 
@@ -325,7 +326,8 @@ chart.RollingCorrelation(EMC.ret, QQQ.ret,width=30)
 
 # create combined data series
 EMC.HPQ.ret = merge(EMC.ret,HPQ.ret)
-
+EMC.QQQ.ret = merge(EMC.ret,QQQ.ret)
+HPQ.QQQ.ret = merge(HPQ.ret,QQQ.ret)
 
 cor.fun = function(x){
   cor(x)[1,2]
@@ -350,3 +352,84 @@ plot(roll.cor, main="20-day rolling correlations",
 grid()
 abline(h=cor(EMC.HPQ.ret)[1,2], lwd=2, col="red")
 
+#EMC.QQQ.RET
+roll.cov = rollapply(as.zoo(EMC.QQQ.ret), FUN=cov.fun, width=30,
+                     by.column=FALSE, align="right")
+roll.cor = rollapply(as.zoo(EMC.QQQ.ret), FUN=cor.fun, width=20,
+                     by.column=FALSE, align="right")
+
+par(mfrow=c(2,1))
+plot(roll.cov, main="20-day rolling covariances",
+     ylab="covariance", lwd=2, col="blue")
+grid()
+abline(h=cov(EMC.QQQ.ret)[1,2], lwd=2, col="red")
+plot(roll.cor, main="20-day rolling correlations",
+     ylab="correlation", lwd=2, col="blue")
+grid()
+abline(h=cor(EMC.QQQ.ret)[1,2], lwd=2, col="red")
+
+#HPQ.QQQ.RET
+roll.cov = rollapply(as.zoo(HPQ.QQQ.ret), FUN=cov.fun, width=30,
+                     by.column=FALSE, align="right")
+roll.cor = rollapply(as.zoo(HPQ.QQQ.ret), FUN=cor.fun, width=20,
+                     by.column=FALSE, align="right")
+
+par(mfrow=c(2,1))
+plot(roll.cov, main="20-day rolling covariances",
+     ylab="covariance", lwd=2, col="blue")
+grid()
+abline(h=cov(HPQ.QQQ.ret)[1,2], lwd=2, col="red")
+plot(roll.cor, main="20-day rolling correlations",
+     ylab="correlation", lwd=2, col="blue")
+grid()
+abline(h=cor(HPQ.QQQ.ret)[1,2], lwd=2, col="red")
+
+#n
+# DCC estimation
+#
+# univariate normal GARCH(1,1) for each series
+garch11.spec = ugarchspec(mean.model = list(armaOrder = c(0,0)), 
+                          variance.model = list(garchOrder = c(1,1), 
+                                                model = "sGARCH"), 
+                          distribution.model = "norm")
+
+# dcc specification - GARCH(1,1) for conditional correlations
+dcc.garch11.spec = dccspec(uspec = multispec( replicate(2, garch11.spec) ), 
+                           dccOrder = c(1,1), 
+                           distribution = "mvnorm")
+dcc.garch11.spec
+
+dcc.fit = dccfit(dcc.garch11.spec, data = EMC.HPQ.ret)
+class(dcc.fit)
+slotNames(dcc.fit)
+names(dcc.fit@mfit)
+names(dcc.fit@model)
+
+# many extractor functions - see help on DCCfit object
+# coef, likelihood, rshape, rskew, fitted, sigma, 
+# residuals, plot, infocriteria, rcor, rcov
+# show, nisurface
+
+# show dcc fit
+dcc.fit
+
+# plot method
+plot(dcc.fit)
+
+ts.plot(rcor(dcc.fit)[1,2,])
+
+#
+# forecasting conditional volatility and correlations
+#
+
+dcc.fcst = dccforecast(dcc.fit, n.ahead=100)
+class(dcc.fcst)
+slotNames(dcc.fcst)
+class(dcc.fcst@mforecast)
+names(dcc.fcst@mforecast)
+
+# many method functions - see help on DCCforecast class
+# rshape, rskew, fitted, sigma, plot, rcor, rcov, show
+
+# show forecasts
+dcc.fcst
