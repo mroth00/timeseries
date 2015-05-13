@@ -238,8 +238,8 @@ plot(mmm1)
 #the model doesnt show significant coefficients for the same parameters, what should be done?
 
 mmm2=garchFit(~arma(2,2)+garch(2,2),data=(hpq_ln_rtn),trace=F,cond.dist="std")
-summary(mmm3)
-plot(mmm3)
+summary(mmm2)
+plot(mmm2)
 
 mmm3=garchFit(~arma(2,2)+garch(2,2),data=(qqq_ln_rtn),trace=F,cond.dist="std")
 summary(mmm3)
@@ -339,15 +339,15 @@ cov.fun = function(x){
 
 roll.cov = rollapply(as.zoo(EMC.HPQ.ret), FUN=cov.fun, width=30,
                      by.column=FALSE, align="right")
-roll.cor = rollapply(as.zoo(EMC.HPQ.ret), FUN=cor.fun, width=20,
+roll.cor = rollapply(as.zoo(EMC.HPQ.ret), FUN=cor.fun, width=30,
                      by.column=FALSE, align="right")
 
 par(mfrow=c(2,1))
-plot(roll.cov, main="20-day rolling covariances",
+plot(roll.cov, main="30-day rolling covariances",
      ylab="covariance", lwd=2, col="blue")
 grid()
 abline(h=cov(EMC.HPQ.ret)[1,2], lwd=2, col="red")
-plot(roll.cor, main="20-day rolling correlations",
+plot(roll.cor, main="30-day rolling correlations",
      ylab="correlation", lwd=2, col="blue")
 grid()
 abline(h=cor(EMC.HPQ.ret)[1,2], lwd=2, col="red")
@@ -355,15 +355,15 @@ abline(h=cor(EMC.HPQ.ret)[1,2], lwd=2, col="red")
 #EMC.QQQ.RET
 roll.cov = rollapply(as.zoo(EMC.QQQ.ret), FUN=cov.fun, width=30,
                      by.column=FALSE, align="right")
-roll.cor = rollapply(as.zoo(EMC.QQQ.ret), FUN=cor.fun, width=20,
+roll.cor = rollapply(as.zoo(EMC.QQQ.ret), FUN=cor.fun, width=30,
                      by.column=FALSE, align="right")
 
 par(mfrow=c(2,1))
-plot(roll.cov, main="20-day rolling covariances",
+plot(roll.cov, main="30-day rolling covariances",
      ylab="covariance", lwd=2, col="blue")
 grid()
 abline(h=cov(EMC.QQQ.ret)[1,2], lwd=2, col="red")
-plot(roll.cor, main="20-day rolling correlations",
+plot(roll.cor, main="30-day rolling correlations",
      ylab="correlation", lwd=2, col="blue")
 grid()
 abline(h=cor(EMC.QQQ.ret)[1,2], lwd=2, col="red")
@@ -371,22 +371,24 @@ abline(h=cor(EMC.QQQ.ret)[1,2], lwd=2, col="red")
 #HPQ.QQQ.RET
 roll.cov = rollapply(as.zoo(HPQ.QQQ.ret), FUN=cov.fun, width=30,
                      by.column=FALSE, align="right")
-roll.cor = rollapply(as.zoo(HPQ.QQQ.ret), FUN=cor.fun, width=20,
+roll.cor = rollapply(as.zoo(HPQ.QQQ.ret), FUN=cor.fun, width=30,
                      by.column=FALSE, align="right")
 
 par(mfrow=c(2,1))
-plot(roll.cov, main="20-day rolling covariances",
+plot(roll.cov, main="30-day rolling covariances",
      ylab="covariance", lwd=2, col="blue")
 grid()
 abline(h=cov(HPQ.QQQ.ret)[1,2], lwd=2, col="red")
-plot(roll.cor, main="20-day rolling correlations",
+plot(roll.cor, main="30-day rolling correlations",
      ylab="correlation", lwd=2, col="blue")
 grid()
 abline(h=cor(HPQ.QQQ.ret)[1,2], lwd=2, col="red")
 
 #n
+#
 # DCC estimation
 #
+
 # univariate normal GARCH(1,1) for each series
 garch11.spec = ugarchspec(mean.model = list(armaOrder = c(0,0)), 
                           variance.model = list(garchOrder = c(1,1), 
@@ -398,6 +400,8 @@ dcc.garch11.spec = dccspec(uspec = multispec( replicate(2, garch11.spec) ),
                            dccOrder = c(1,1), 
                            distribution = "mvnorm")
 dcc.garch11.spec
+
+#for EMC.HPQ.ret
 
 dcc.fit = dccfit(dcc.garch11.spec, data = EMC.HPQ.ret)
 class(dcc.fit)
@@ -413,12 +417,13 @@ names(dcc.fit@model)
 # show dcc fit
 dcc.fit
 
+#o) for EMC.HPQ.ret
 # plot method
 plot(dcc.fit)
 
 ts.plot(rcor(dcc.fit)[1,2,])
 
-#
+#p) for EMC.HPQ.ret
 # forecasting conditional volatility and correlations
 #
 
@@ -433,12 +438,15 @@ names(dcc.fcst@mforecast)
 
 # show forecasts
 dcc.fcst
+plot(dcc.fcst)
 
-#EMC.QQQ
+#n) for EMC.QQQ.ret
+
 dcc.fit = dccfit(dcc.garch11.spec, data = EMC.QQQ.ret)
 class(dcc.fit)
 slotNames(dcc.fit)
 names(dcc.fit@mfit)
+names(dcc.fit@model)
 
 # many extractor functions - see help on DCCfit object
 # coef, likelihood, rshape, rskew, fitted, sigma, 
@@ -448,12 +456,13 @@ names(dcc.fit@mfit)
 # show dcc fit
 dcc.fit
 
+#o) for EMC.QQQ.ret
 # plot method
 plot(dcc.fit)
 
 ts.plot(rcor(dcc.fit)[1,2,])
 
-#
+#p) for EMC.QQQ.ret
 # forecasting conditional volatility and correlations
 #
 
@@ -468,8 +477,9 @@ names(dcc.fcst@mforecast)
 
 # show forecasts
 dcc.fcst
+plot(dcc.fcst)
 
-#HPQ.QQQ
+#n) for HPQ.QQQ.ret
 
 dcc.fit = dccfit(dcc.garch11.spec, data = HPQ.QQQ.ret)
 class(dcc.fit)
@@ -485,12 +495,13 @@ names(dcc.fit@model)
 # show dcc fit
 dcc.fit
 
+#o) for HPQ.QQQ.ret
 # plot method
 plot(dcc.fit)
 
 ts.plot(rcor(dcc.fit)[1,2,])
 
-#
+#p) for HPQ.QQQ.ret
 # forecasting conditional volatility and correlations
 #
 
@@ -505,4 +516,8 @@ names(dcc.fcst@mforecast)
 
 # show forecasts
 dcc.fcst
+
+plot(dcc.fcst)
+
+
 
