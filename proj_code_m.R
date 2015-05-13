@@ -433,3 +433,76 @@ names(dcc.fcst@mforecast)
 
 # show forecasts
 dcc.fcst
+
+#EMC.QQQ
+dcc.fit = dccfit(dcc.garch11.spec, data = EMC.QQQ.ret)
+class(dcc.fit)
+slotNames(dcc.fit)
+names(dcc.fit@mfit)
+
+# many extractor functions - see help on DCCfit object
+# coef, likelihood, rshape, rskew, fitted, sigma, 
+# residuals, plot, infocriteria, rcor, rcov
+# show, nisurface
+
+# show dcc fit
+dcc.fit
+
+# plot method
+plot(dcc.fit)
+
+ts.plot(rcor(dcc.fit)[1,2,])
+
+#
+# forecasting conditional volatility and correlations
+#
+
+dcc.fcst = dccforecast(dcc.fit, n.ahead=100)
+class(dcc.fcst)
+slotNames(dcc.fcst)
+class(dcc.fcst@mforecast)
+names(dcc.fcst@mforecast)
+
+# many method functions - see help on DCCforecast class
+# rshape, rskew, fitted, sigma, plot, rcor, rcov, show
+
+# show forecasts
+dcc.fcst
+
+#HPQ.QQQ
+
+dcc.fit = dccfit(dcc.garch11.spec, data = HPQ.QQQ.ret)
+class(dcc.fit)
+slotNames(dcc.fit)
+names(dcc.fit@mfit)
+names(dcc.fit@model)
+
+# many extractor functions - see help on DCCfit object
+# coef, likelihood, rshape, rskew, fitted, sigma, 
+# residuals, plot, infocriteria, rcor, rcov
+# show, nisurface
+
+# show dcc fit
+dcc.fit
+
+# plot method
+plot(dcc.fit)
+
+ts.plot(rcor(dcc.fit)[1,2,])
+
+#
+# forecasting conditional volatility and correlations
+#
+
+dcc.fcst = dccforecast(dcc.fit, n.ahead=100)
+class(dcc.fcst)
+slotNames(dcc.fcst)
+class(dcc.fcst@mforecast)
+names(dcc.fcst@mforecast)
+
+# many method functions - see help on DCCforecast class
+# rshape, rskew, fitted, sigma, plot, rcor, rcov, show
+
+# show forecasts
+dcc.fcst
+
