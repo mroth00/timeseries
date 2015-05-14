@@ -1,0 +1,621 @@
+
+library(fGarch)
+library(fBasics)
+
+library(fBasics)
+library(psych)
+library(forecast)
+library(PerformanceAnalytics)
+library(quantmod)
+library(rugarch)
+library(car)
+library(FinTS)
+library(rmgarch)
+options(digits=4)
+
+# Read in the data
+
+
+emc <- read.csv("~/Desktop/Spring 2015/Time Series/PROJECT/emc.csv")
+emc=emc[-1006,]
+tail(emc)
+hpq <- read.csv("~/Desktop/Spring 2015/Time Series/PROJECT/hpq.csv")
+tail(hpq)x
+hpq=hpq[-1006,]
+qqq <- read.csv("~/Desktop/Spring 2015/Time Series/PROJECT/qqq.csv")
+qqq=qqq[-1006,]
+tail(qqq)
+
+
+# Just get the log returns
+emc_ln_rtn=log(emc$Daily_Return+1)
+hpq_ln_rtn=log(hpq$Daily_Return+1)
+qqq_ln_rtn=log(qqq$Daily_Return+1)
+
+
+
+# plot returns
+plot(emc_ln_rtn,type='l')
+plot(hpq_ln_rtn,type='l')
+plot(qqq_ln_rtn,type='l')
+
+# Part (a)
+
+basicStats(emc_ln_rtn)
+basicStats(hpq_ln_rtn)
+basicStats(qqq_ln_rtn)
+
+# Part (b)
+
+t.test(emc_ln_rtn)
+t.test(hpq_ln_rtn)
+t.test(qqq_ln_rtn)
+
+# Part (c)
+
+period=1005
+
+s.emc <- skewness(emc_ln_rtn)/sqrt(6/period)
+s.hpq <- skewness(hpq_ln_rtn)/sqrt(6/period)
+s.qqq <- skewness(qqq_ln_rtn)/sqrt(6/period)
+
+# skewness hypothesis tests
+pv.emc <- 2*(1-pnorm(abs(s.emc)))
+pv.hpq <- 2*(1-pnorm(abs(s.hpq)))
+pv.qqq <- 2*(1-pnorm(abs(s.qqq)))
+
+print(paste("EMC Skewness Statistic:",s.emc[1]))
+print(paste("EMC p-value:", pv.emc))   
+
+print(paste("HPQ Skewness Statistic:",s.hpq[1]))
+print(paste("HPQ p-value:", pv.hpq))   
+
+print(paste("QQQ Skewness Statistic:",s.qqq[1]))
+print(paste("QQQ p-value:", pv.qqq))   
+
+
+# Part (d)
+k.emc <- kurtosis(emc_ln_rtn)
+k.hpq <- kurtosis(hpq_ln_rtn)
+k.qqq <- kurtosis(qqq_ln_rtn)
+
+pv.emc <- 2*(1-pnorm(abs(k.emc)))
+print(paste("EMC Kurtosis Statistic:",k.emc[1]))
+print(paste("EMC p-value:",pv.emc))
+
+pv.hpq <- 2*(1-pnorm(abs(k.hpq)))
+print(paste("HPQ Kurtosis Statistic:",k.hpq[1]))
+print(paste("HPQ p-value:",pv.hpq))
+
+pv.qqq <- 2*(1-pnorm(abs(k.qqq)))
+print(paste("QQQ Kurtosis Statistic:",k.qqq[1]))
+print(paste("QQQ p-value:",pv.qqq))
+
+# kurtosis hypothesis tests
+
+# Part (e)
+
+library(ggplot2)
+
+w.emc <-ggplot() + aes(emc_ln_rtn)+ stat_density(colour="blue",fill="light blue")
+w.emc + xlab("Log Returns")+ylab("Density")+ggtitle("Density EMC Log Returns")
+
+w.hpq<-ggplot() + aes(hpq_ln_rtn)+ stat_density(colour="cyan4",fill="cyan3")
+w.hpq + xlab("Log Returns")+ylab("Density")+ggtitle("Density HPQ Log Returns")
+
+w.qqq<-ggplot() + aes(qqq_ln_rtn)+ stat_density(colour="deepskyblue2",fill="cyan")
+
+# another kind of density plot
+d.emc <- densityPlot(as.timeSeries(emc_ln_rtn), title=FALSE)
+mtext("EMC Density",side=3,cex=1.2,padj=-0.5) 
+d.hpq <- densityPlot(as.timeSeries(hpq_ln_rtn),title=FALSE)
+mtext("HPQ Density",side=3,cex=1.2,padj=-0.5) 
+d.qqq <- densityPlot(as.timeSeries(qqq_ln_rtn), title=FALSE)
+mtext("QQQ Density",side=3,cex=1.2,padj=-0.5) 
+
+#Choosing distribution by observing fitting QQ plots
+
+# Gaussian normal
+qqnormPlot(as.timeSeries(emc_ln_rtn), title=FALSE) 
+mtext("EMC Gaussian",side=3,cex=1.5,padj=-0.5) 
+qqnormPlot(as.timeSeries(hpq_ln_rtn), title=FALSE)
+mtext("HPQ Gaussian",side=3,cex=1.5,padj=-0.5) 
+qqnormPlot(as.timeSeries(qqq_ln_rtn), title=FALSE) 
+mtext("QQQ Gaussian",side=3,cex=1.5,padj=-0.5) 
+
+# Student T
+qqghtPlot(as.timeSeries(emc_ln_rtn), title=FALSE)
+mtext("EMC Student t ",side=3,cex=1.5,padj=-0.5) 
+qqghtPlot(as.timeSeries(hpq_ln_rtn), title= FALSE)
+mtext("HPQ Student t ",side=3,cex=1.5,padj=-0.5) 
+qqghtPlot(as.timeSeries(qqq_ln_rtn), title=FALSE) 
+mtext("QQQ Student t ",side=3,cex=1.5,padj=-0.5)
+
+
+# Generalized Lambda
+qqgldPlot(as.timeSeries(emc_ln_rtn), title=FALSE)
+mtext("EMC Lamda ",side=3,cex=1.5,padj=-0.5) 
+qqgldPlot(as.timeSeries(hpq_ln_rtn), title= FALSE)
+mtext("HPQ Lamda ",side=3,cex=1.5,padj=-0.5) 
+qqgldPlot(as.timeSeries(qqq_ln_rtn), title=FALSE) 
+mtext("QQQ Lamda ",side=3,cex=1.5,padj=-0.5)
+
+
+##############################################################
+# Part  f
+# Model Identification
+
+# EMC ACF
+emc.acf <- acf(emc_ln_rtn, plot=FALSE)
+emc.acf.df <- with(emc.acf, data.frame(lag, acf))
+
+q.emc.acf <- ggplot(data = emc.acf.df, mapping = aes(x = lag, y = acf)) +
+  geom_hline(aes(yintercept = 0)) +
+  geom_segment(mapping = aes(xend = lag, yend = 0)) + ggtitle("EMC Log Returns ACF")
+ 
+q.emc.acf 
+
+#EMC PACF
+emc.pacf <- pacf(emc_ln_rtn, plot=FALSE)
+emc.pacf.df <- with(emc.pacf, data.frame(lag, acf))
+
+q.emc.pacf <- ggplot(data = emc.pacf.df, mapping = aes(x = lag, y = acf)) +
+  geom_hline(aes(yintercept = 0)) +
+  geom_segment(mapping = aes(xend = lag, yend = 0)) + ggtitle("EMC Log Returns Partial ACF")
+
+q.emc.pacf #<- py$ggplotly(q.emc.pacf)
+
+
+#EMC DIFF PACF
+emc.diff.pacf <- pacf(diff(emc_ln_rtn), plot=FALSE)
+emc.diff.pacf.df <- with(emc.diff.pacf, data.frame(lag, acf))
+
+q.emc.diff.pacf <- ggplot(data = emc.diff.pacf.df, mapping = aes(x = lag, y = acf)) +
+  geom_hline(aes(yintercept = 0)) +
+  geom_segment(mapping = aes(xend = lag, yend = 0))   +ggtitle("EMC Log Returns Differenced Partial ACF")
+
+q.emc.diff.pacf 
+
+
+
+# HPQ ACF
+#hpq.diff.pacf<- pacf(diff(hpq_ln_rtn), main="HPQ Differenced PACF")
+
+hpq.acf <- acf(hpq_ln_rtn, plot=FALSE)
+hpq.acf.df <- with(hpq.acf, data.frame(lag, acf))
+
+q.hpq.acf <- ggplot(data = hpq.acf.df, mapping = aes(x = lag, y = acf)) +
+  geom_hline(aes(yintercept = 0)) +
+  geom_segment(mapping = aes(xend = lag, yend = 0)) + ggtitle("HPQ Log Returns ACF")
+
+q.hpq.acf 
+
+# HPQ PACF
+hpq.pacf <- pacf(hpq_ln_rtn, plot=FALSE)
+hpq.pacf.df <- with(hpq.pacf, data.frame(lag, acf))
+
+q.hpq.pacf <- ggplot(data = hpq.pacf.df, mapping = aes(x = lag, y = acf)) +
+  geom_hline(aes(yintercept = 0)) +
+  geom_segment(mapping = aes(xend = lag, yend = 0)) + ggtitle("HPQ Log Returns PACF")
+
+q.hpq.pacf 
+
+# HPQ DIfferenced PACF
+hpq.diff.pacf <- pacf(diff(hpq_ln_rtn), plot=FALSE)
+hpq.diff.pacf.df <- with(hpq.diff.pacf, data.frame(lag, acf))
+
+q.hpq.diff.pacf <- ggplot(data = hpq.diff.pacf.df, mapping = aes(x = lag, y = acf)) +
+  geom_hline(aes(yintercept = 0)) +
+  geom_segment(mapping = aes(xend = lag, yend = 0)) + ggtitle("HPQ Log Returns Differenced PACF")
+
+q.hpq.diff.pacf 
+
+
+# QQQ ACF
+
+qqq.acf <- acf(qqq_ln_rtn, plot=FALSE)
+qqq.acf.df <- with(qqq.acf, data.frame(lag, acf))
+
+q.qqq.acf <- ggplot(data = qqq.acf.df, mapping = aes(x = lag, y = acf)) +
+  geom_hline(aes(yintercept = 0)) +
+  geom_segment(mapping = aes(xend = lag, yend = 0)) + ggtitle("QQQ Log Returns ACF")
+
+q.qqq.acf 
+
+#QQQ PACF
+qqq.pacf <- pacf(qqq_ln_rtn, plot=FALSE)
+qqq.pacf.df <- with(qqq.pacf, data.frame(lag, acf))
+
+q.qqq.pacf <- ggplot(data = qqq.pacf.df, mapping = aes(x = lag, y = acf)) +
+  geom_hline(aes(yintercept = 0)) +
+  geom_segment(mapping = aes(xend = lag, yend = 0)) + ggtitle("QQQ Log Returns PACF")
+
+q.qqq.pacf 
+
+# QQQ DIFF PACF
+qqq.diff.pacf <- pacf(diff(qqq_ln_rtn), plot=FALSE)
+qqq.diff.pacf.df <- with(qqq.diff.pacf, data.frame(lag, acf))
+
+q.qqq.diff.pacf <- ggplot(data = qqq.diff.pacf.df, mapping = aes(x = lag, y = acf)) +
+  geom_hline(aes(yintercept = 0)) +
+  geom_segment(mapping = aes(xend = lag, yend = 0)) + ggtitle("QQQ Log Returns Differenced PACF")
+
+q.qqq.diff.pacf 
+
+# Part (f)
+# MODEL ESTIMATION - all (2,1,2)
+m1 <-arima(emc_ln_rtn,order=c(2,1,2),include.mean=FALSE)
+tsdiag(m1)
+m1
+
+m2 <- arima(hpq_ln_rtn, order= c(2,1,2), include.mean=FALSE)
+tsdiag(m2)
+m2
+
+m3 <-arima(qqq_ln_rtn, order= c(2,1,2), include.mean=FALSE)
+tsdiag(m3)
+m3
+
+# Auto-select functions
+aa.emc <- auto.arima(emc_ln_rtn) # result (0,0,0)
+auto.arima(hpq_ln_rtn) # result (1,1,1)
+auto.arima(qqq_ln_rtn) # result (2,0,3)
+
+# second set of models based on auto-select function
+#m1b <- arima(emc_ln_rtn, order=c(0,0,0))
+#tsdiag(m1b)
+#m1b
+#m2b <- arima(hpq_ln_rtn, order=c(1,1,1), include.mean=F)
+#tsdiag(m2b)
+#m2b
+#m3b <- arima(qqq_ln_rtn, order=c(2,0,3), include.mean = F)
+#tsdiag(m3)
+#m3b
+# residual tests for a model
+#ArchTest(m3b$residuals)
+#sqrt(m3b$sigma2) 
+#Box.test(m3b$resid,lag=24,type='Ljung',fitdf=4)
+
+
+
+library(rugarch)
+
+#g) forecasts
+
+#m1p=predict(m1,30)
+
+#e.lcl=m1p$pred-1.96*m1p$se
+#e.lcl
+#e.ucl=m1p$pred+1.96*m1p$se
+#e.ucl
+
+#m2p=predict(m2,30)
+#h.lcl=m2p$pred-1.96*m2p$se
+#h.lcl
+#h.ucl=m2p$pred+1.96*m2p$se
+#h.ucl
+
+#m3p=predict(m3,30)
+#q.lcl=m3p$pred-1.96*m3p$se
+#q.lcl
+#q.ucl=m3p$pred+1.96*m3p$se
+#q.ucl
+
+m1.forecast <- forecast(m1, h=21)
+m2.forecast <- forecast(m2, h=21)
+m3.forecast <- forecast(m3, h=21)
+m1.forecast
+m2.forecast
+m3.forecast
+
+plot(m1.forecast, include=100,main="Forecast of EMC Log Return Data for January 2015")
+plot(m2.forecast, include=100, main="Forecast of HPQ Log Return Data for January 2015")
+plot(m3.forecast,include=100, main="Forecast of QQQ Log Return Data for January 2015")
+
+
+
+#h)Determine ARCH effect in the log return series
+# box ljung test on the residuals
+
+Box.test(m1$residuals,lag=10,type='Ljung')
+Box.test(m2$residuals,lag=10,type='Ljung')
+Box.test(m3$residuals,lag=10,type='Ljung')
+
+
+Box.test(m1$residuals^2,lag=10,type='Ljung')
+Box.test(m2$residuals^2,lag=10,type='Ljung')
+Box.test(m3$residuals^2,lag=10,type='Ljung')
+
+#test the original return data with lag 10
+Box.test(emc_ln_rtn,lag=10,type='Ljung')
+Box.test(hpq_ln_rtn,lag=10,type='Ljung')
+Box.test(qqq_ln_rtn,lag=10,type='Ljung')
+
+#i) The parameters for garch needs to be decided, the model coefficients
+#are not significant with garch(1,1), garch(1,0), garch(0,1) and for arch as well.
+
+mm1=garchFit(~arma(2,2)+garch(2,2),data=(emc_ln_rtn),trace=F)
+summary(mm1)
+#CONVERGENCE PROBLEM?????
+
+# No arch Effect for hpq dont bother
+mm2=garchFit(~arma(1,1)+garch(1,1),data=(hpq_ln_rtn),trace=F)
+summary(mm2)
+
+mm3=garchFit(~arma(2,2)+garch(2,2),data=(qqq_ln_rtn),trace=F)
+summary(mm3)
+
+plot(mm1)
+
+plot(mm2)
+
+plot(mm3)
+
+#j
+mmm1=garchFit(~arma(2,2)+garch(2,2),data=(emc_ln_rtn),trace=F,cond.dist="std")
+summary(mmm1)
+plot(mmm1)
+
+#the model doesnt show significant coefficients for the same parameters, what should be done?
+
+mmm2=garchFit(~arma(2,2)+garch(2,2),data=(hpq_ln_rtn),trace=F,cond.dist="std")
+summary(mmm3)
+plot(mmm3)
+
+mmm3=garchFit(~arma(2,2)+garch(2,2),data=(qqq_ln_rtn),trace=F,cond.dist="std")
+summary(mmm3)
+plot(mmm3)
+
+#k) 1 step ahead forecast with 95% interval forecasts
+pm1=predict(mmm1,1)
+pm1
+
+pm2=predict(mmm2,1)
+pm2
+
+pm3=predict(mmm3,1)
+pm3
+
+#l) Determine cross correlations
+
+plot(mm1,which=7)
+mtext("EMC",side=3,cex=0.6)
+plot(mm2,which=7)
+mtext("HP",side=3,cex=0.6)
+plot(mm3,which=7)
+mtext("NASDAQ 100",side=3,cex=0.6)
+
+
+plot(coredata(emc_ln_rtn),coredata(hpq_ln_rtn),xlab="EMC",ylab="HP",type="p",pch="16",lwd=2,col="blue",main="Scatterplot of EMC and HP")
+abline(h=0,v=0)
+
+plot(coredata(hpq_ln_rtn),coredata(qqq_ln_rtn),xlab="HP",ylab="NASDAQ 100",type="p",pch="16",lwd=2,col="blue",main="Scatterplot of HP and NASDAQ 100")
+abline(h=0,v=0)
+
+plot(coredata(emc_ln_rtn),coredata(qqq_ln_rtn),xlab="EMC",ylab="NASDAQ 100",type="p",pch="16",lwd=2,col="blue",main="Scatterplot of EMC and NASDAQ 100")
+abline(h=0,v=0)
+
+#m) Using a 30 day moving average and plotting covariances and correlations 
+
+
+
+# scatterplot of returns
+plot( coredata(emc_ln_rtn), coredata(hpq_ln_rtn), xlab="EMC", ylab="HPQ", 
+      type="p", pch=16, lwd=2, col="blue")
+abline(h=0,v=0)
+plot(coredata(hpq_ln_rtn), coredata(qqq_ln_rtn), xlab="HP", ylab="NASDAQ 100",
+     type="p", pch=16, lwd=2, col="blue")
+abline(h=0,v=0)
+plot(coredata(emc_ln_rtn), coredata(qqq_ln_rtn), xlab="EMC", ylab="NASDAQ 100",
+     type="p", pch=16, lwd=2, col="blue")
+abline(h=0,v=0)
+
+#part c 
+# compute rolling correlations
+#
+symbol.vec = c("EMC", "HPQ","QQQ")
+getSymbols(symbol.vec, from ="2011-01-04", to = "2014-12-24",src="yahoo")
+
+
+# extract adjusted closing prices
+EMC = EMC[, "EMC.Adjusted", drop=F]
+HPQ = HPQ[, "HPQ.Adjusted", drop=F]
+QQQ = QQQ[, "QQQ.Adjusted", drop=F]
+
+EMC.ret = CalculateReturns(EMC, method="log")
+HPQ.ret = CalculateReturns(HPQ, method="log")
+QQQ.ret = CalculateReturns(QQQ, method="log")
+
+EMC.ret = EMC.ret[-1,]
+HPQ.ret = HPQ.ret[-1,]
+QQQ.ret = QQQ.ret[-1,]
+colnames(EMC.ret) ="EMC"
+colnames(HPQ.ret) = "HPQ"
+colnames(QQQ.ret) = "QQQ"
+
+
+chart.RollingCorrelation(EMC.ret, HPQ.ret,width=30)
+chart.RollingCorrelation(HPQ.ret, QQQ.ret,width=30)
+chart.RollingCorrelation(EMC.ret, QQQ.ret,width=30)
+
+# create combined data series
+EMC.HPQ.ret = merge(EMC.ret,HPQ.ret)
+EMC.QQQ.ret = merge(EMC.ret,QQQ.ret)
+HPQ.QQQ.ret = merge(HPQ.ret,QQQ.ret)
+
+cor.fun = function(x){
+  cor(x)[1,2]
+}
+
+cov.fun = function(x){
+  cov(x)[1,2]
+}
+
+roll.cov = rollapply(as.zoo(EMC.HPQ.ret), FUN=cov.fun, width=30,
+                     by.column=FALSE, align="right")
+roll.cor = rollapply(as.zoo(EMC.HPQ.ret), FUN=cor.fun, width=20,
+                     by.column=FALSE, align="right")
+
+par(mfrow=c(2,1))
+plot(roll.cov, main="20-day rolling covariances",
+     ylab="covariance", lwd=2, col="blue")
+grid()
+abline(h=cov(EMC.HPQ.ret)[1,2], lwd=2, col="red")
+plot(roll.cor, main="20-day rolling correlations",
+     ylab="correlation", lwd=2, col="blue")
+grid()
+abline(h=cor(EMC.HPQ.ret)[1,2], lwd=2, col="red")
+
+#EMC.QQQ.RET
+roll.cov = rollapply(as.zoo(EMC.QQQ.ret), FUN=cov.fun, width=30,
+                     by.column=FALSE, align="right")
+roll.cor = rollapply(as.zoo(EMC.QQQ.ret), FUN=cor.fun, width=20,
+                     by.column=FALSE, align="right")
+
+par(mfrow=c(2,1))
+plot(roll.cov, main="20-day rolling covariances",
+     ylab="covariance", lwd=2, col="blue")
+grid()
+abline(h=cov(EMC.QQQ.ret)[1,2], lwd=2, col="red")
+plot(roll.cor, main="20-day rolling correlations",
+     ylab="correlation", lwd=2, col="blue")
+grid()
+abline(h=cor(EMC.QQQ.ret)[1,2], lwd=2, col="red")
+
+#HPQ.QQQ.RET
+roll.cov = rollapply(as.zoo(HPQ.QQQ.ret), FUN=cov.fun, width=30,
+                     by.column=FALSE, align="right")
+roll.cor = rollapply(as.zoo(HPQ.QQQ.ret), FUN=cor.fun, width=20,
+                     by.column=FALSE, align="right")
+
+par(mfrow=c(2,1))
+plot(roll.cov, main="20-day rolling covariances",
+     ylab="covariance", lwd=2, col="blue")
+grid()
+abline(h=cov(HPQ.QQQ.ret)[1,2], lwd=2, col="red")
+plot(roll.cor, main="20-day rolling correlations",
+     ylab="correlation", lwd=2, col="blue")
+grid()
+abline(h=cor(HPQ.QQQ.ret)[1,2], lwd=2, col="red")
+
+#n
+# DCC estimation
+#
+# univariate normal GARCH(1,1) for each series
+garch11.spec = ugarchspec(mean.model = list(armaOrder = c(0,0)), 
+                          variance.model = list(garchOrder = c(1,1), 
+                                                model = "sGARCH"), 
+                          distribution.model = "norm")
+
+# dcc specification - GARCH(1,1) for conditional correlations
+dcc.garch11.spec = dccspec(uspec = multispec( replicate(2, garch11.spec) ), 
+                           dccOrder = c(1,1), 
+                           distribution = "mvnorm")
+dcc.garch11.spec
+
+dcc.fit = dccfit(dcc.garch11.spec, data = EMC.HPQ.ret)
+class(dcc.fit)
+slotNames(dcc.fit)
+names(dcc.fit@mfit)
+names(dcc.fit@model)
+
+# many extractor functions - see help on DCCfit object
+# coef, likelihood, rshape, rskew, fitted, sigma, 
+# residuals, plot, infocriteria, rcor, rcov
+# show, nisurface
+
+# show dcc fit
+dcc.fit
+
+# plot method
+plot(dcc.fit)
+
+ts.plot(rcor(dcc.fit)[1,2,])
+
+#
+# forecasting conditional volatility and correlations
+#
+
+dcc.fcst = dccforecast(dcc.fit, n.ahead=100)
+class(dcc.fcst)
+slotNames(dcc.fcst)
+class(dcc.fcst@mforecast)
+names(dcc.fcst@mforecast)
+
+# many method functions - see help on DCCforecast class
+# rshape, rskew, fitted, sigma, plot, rcor, rcov, show
+
+# show forecasts
+dcc.fcst
+
+#EMC.QQQ
+dcc.fit = dccfit(dcc.garch11.spec, data = EMC.QQQ.ret)
+class(dcc.fit)
+slotNames(dcc.fit)
+names(dcc.fit@mfit)
+
+# many extractor functions - see help on DCCfit object
+# coef, likelihood, rshape, rskew, fitted, sigma, 
+# residuals, plot, infocriteria, rcor, rcov
+# show, nisurface
+
+# show dcc fit
+dcc.fit
+
+# plot method
+plot(dcc.fit)
+
+ts.plot(rcor(dcc.fit)[1,2,])
+
+#
+# forecasting conditional volatility and correlations
+#
+
+dcc.fcst = dccforecast(dcc.fit, n.ahead=100)
+class(dcc.fcst)
+slotNames(dcc.fcst)
+class(dcc.fcst@mforecast)
+names(dcc.fcst@mforecast)
+
+# many method functions - see help on DCCforecast class
+# rshape, rskew, fitted, sigma, plot, rcor, rcov, show
+
+# show forecasts
+dcc.fcst
+
+#HPQ.QQQ
+
+dcc.fit = dccfit(dcc.garch11.spec, data = HPQ.QQQ.ret)
+class(dcc.fit)
+slotNames(dcc.fit)
+names(dcc.fit@mfit)
+names(dcc.fit@model)
+
+# many extractor functions - see help on DCCfit object
+# coef, likelihood, rshape, rskew, fitted, sigma, 
+# residuals, plot, infocriteria, rcor, rcov
+# show, nisurface
+
+# show dcc fit
+dcc.fit
+
+# plot method
+plot(dcc.fit)
+
+ts.plot(rcor(dcc.fit)[1,2,])
+
+#
+# forecasting conditional volatility and correlations
+#
+
+dcc.fcst = dccforecast(dcc.fit, n.ahead=100)
+class(dcc.fcst)
+slotNames(dcc.fcst)
+class(dcc.fcst@mforecast)
+names(dcc.fcst@mforecast)
+
+# many method functions - see help on DCCforecast class
+# rshape, rskew, fitted, sigma, plot, rcor, rcov, show
+
+# show forecasts
+dcc.fcst
