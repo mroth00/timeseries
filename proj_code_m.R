@@ -140,7 +140,7 @@ m1
 
 ts.hpq <- ts(hpq_ln_rtn,frequency=365,start=c(2011,1))
 plot(ts.hpq, main="Log Returns HPQ", xlab= "Time", ylab="Log Returns")
-m2 <- arima(hpq_ln_rtn, order= c(2,1,2), include.mean=FALSE)
+m2 <- arima(hpq_ln_rtn, order= c(0,1,1), include.mean=FALSE)
 tsdiag(m2)
 m2
 
@@ -328,6 +328,7 @@ chart.RollingCorrelation(EMC.ret, QQQ.ret,width=30)
 EMC.HPQ.ret = merge(EMC.ret,HPQ.ret)
 EMC.QQQ.ret = merge(EMC.ret,QQQ.ret)
 HPQ.QQQ.ret = merge(HPQ.ret,QQQ.ret)
+EMC.HPQ.QQQ.ret = merge(EMC.ret,HPQ.ret,QQQ.ret)
 
 cor.fun = function(x){
   cor(x)[1,2]
@@ -396,14 +397,14 @@ garch11.spec = ugarchspec(mean.model = list(armaOrder = c(0,0)),
                           distribution.model = "norm")
 
 # dcc specification - GARCH(1,1) for conditional correlations
-dcc.garch11.spec = dccspec(uspec = multispec( replicate(2, garch11.spec) ), 
+dcc.garch11.spec = dccspec(uspec = multispec( replicate(3, garch11.spec) ), 
                            dccOrder = c(1,1), 
                            distribution = "mvnorm")
 dcc.garch11.spec
 
 #for EMC.HPQ.ret
 
-dcc.fit = dccfit(dcc.garch11.spec, data = EMC.HPQ.ret)
+dcc.fit = dccfit(dcc.garch11.spec, data = EMC.HPQ.QQQ.ret)
 class(dcc.fit)
 slotNames(dcc.fit)
 names(dcc.fit@mfit)
@@ -440,84 +441,7 @@ names(dcc.fcst@mforecast)
 dcc.fcst
 plot(dcc.fcst)
 
-#n) for EMC.QQQ.ret
 
-dcc.fit = dccfit(dcc.garch11.spec, data = EMC.QQQ.ret)
-class(dcc.fit)
-slotNames(dcc.fit)
-names(dcc.fit@mfit)
-names(dcc.fit@model)
-
-# many extractor functions - see help on DCCfit object
-# coef, likelihood, rshape, rskew, fitted, sigma, 
-# residuals, plot, infocriteria, rcor, rcov
-# show, nisurface
-
-# show dcc fit
-dcc.fit
-
-#o) for EMC.QQQ.ret
-# plot method
-plot(dcc.fit)
-
-ts.plot(rcor(dcc.fit)[1,2,])
-
-#p) for EMC.QQQ.ret
-# forecasting conditional volatility and correlations
-#
-
-dcc.fcst = dccforecast(dcc.fit, n.ahead=100)
-class(dcc.fcst)
-slotNames(dcc.fcst)
-class(dcc.fcst@mforecast)
-names(dcc.fcst@mforecast)
-
-# many method functions - see help on DCCforecast class
-# rshape, rskew, fitted, sigma, plot, rcor, rcov, show
-
-# show forecasts
-dcc.fcst
-plot(dcc.fcst)
-
-#n) for HPQ.QQQ.ret
-
-dcc.fit = dccfit(dcc.garch11.spec, data = HPQ.QQQ.ret)
-class(dcc.fit)
-slotNames(dcc.fit)
-names(dcc.fit@mfit)
-names(dcc.fit@model)
-
-# many extractor functions - see help on DCCfit object
-# coef, likelihood, rshape, rskew, fitted, sigma, 
-# residuals, plot, infocriteria, rcor, rcov
-# show, nisurface
-
-# show dcc fit
-dcc.fit
-
-#o) for HPQ.QQQ.ret
-# plot method
-plot(dcc.fit)
-
-ts.plot(rcor(dcc.fit)[1,2,])
-
-#p) for HPQ.QQQ.ret
-# forecasting conditional volatility and correlations
-#
-
-dcc.fcst = dccforecast(dcc.fit, n.ahead=100)
-class(dcc.fcst)
-slotNames(dcc.fcst)
-class(dcc.fcst@mforecast)
-names(dcc.fcst@mforecast)
-
-# many method functions - see help on DCCforecast class
-# rshape, rskew, fitted, sigma, plot, rcor, rcov, show
-
-# show forecasts
-dcc.fcst
-
-plot(dcc.fcst)
 
 
 
