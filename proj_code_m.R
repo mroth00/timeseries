@@ -440,8 +440,27 @@ names(dcc.fcst@mforecast)
 # show forecasts
 dcc.fcst
 plot(dcc.fcst)
+#
+# Plot Conditional Covariance
+#
 
+par(mar=c(3,3,4,1))
+plot(dcc.fit,which=3, series=c(1,2))
+mtext("DCC with Normal Distribution",side=3,cex=0.9,,padj=-1.2)
+par(mar=c(3,3,4,1))
+plot(dcc.fit,which=3, series=c(1,3))
+mtext("DCC with Normal Distribution",side=3,cex=0.9,padj=-1.2)
+par(mar=c(3,3,4,1))
+plot(dcc.fit,which=3, series=c(2,3))
+mtext("DCC with Normal Distribution",side=3,cex=0.9,padj=-1.2)
 
-
-
-
+#Plot Conditional Correlation
+par(mar=c(3,3,4,1))
+plot(dcc.fit,which=4, series=c(1,2))
+mtext("DCC with Normal Distribution",side=3,cex=0.9,,padj=-1.2)
+par(mar=c(3,3,4,1))
+plot(dcc.fit,which=4, series=c(1,3))
+mtext("DCC with Normal Distribution",side=3,cex=0.9,,padj=-1.2)
+par(mar=c(3,3,4,1))
+plot(dcc.fit,which=4, series=c(2,3))
+mtext("DCC with Normal Distribution",side=3,cex=0.9,,padj=-1.2)
