@@ -464,3 +464,22 @@ mtext("DCC with Normal Distribution",side=3,cex=0.9,,padj=-1.2)
 par(mar=c(3,3,4,1))
 plot(dcc.fit,which=4, series=c(2,3))
 mtext("DCC with Normal Distribution",side=3,cex=0.9,,padj=-1.2)
+
+
+dcc.fcst = dccforecast(dcc.fit, n.ahead=21)
+class(dcc.fcst)
+slotNames(dcc.fcst)
+class(dcc.fcst@mforecast)
+names(dcc.fcst@mforecast)
+
+dcc.fcst
+
+plot(dcc.fcst, which=3, series=c(1,2))
+plot(dcc.fcst, which=3, series=c(1,3))
+plot(dcc.fcst, which=3, series=c(2,3))
+
+plot(dcc.fcst, which=4, series=c(1,2)) # Error: not a matrix
+plot(dcc.fcst, which=5)
+rcor(dcc.fcst, type="R")
+
+dcc.fcst2 = dccforecast(dcc.fit, n.ahead=1)
